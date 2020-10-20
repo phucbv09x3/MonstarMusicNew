@@ -14,13 +14,14 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.MutableLiveData
 import com.example.monstarmusicnew.R
-import com.example.monstarmusicnew.activity.HomeActivity
-import com.example.monstarmusicnew.model.Music
+import com.example.monstarmusicnew.view.fragment.OfflineFragment
+import com.example.monstarmusicnew.model.SongOffline
+import com.example.monstarmusicnew.model.SongSearchOnline
 import com.example.monstarmusicnew.viewmodel.MusicViewModel
 
 class MusicService :Service(){
-    var mu = MutableLiveData<Music>()
-
+    var mu = MutableLiveData<SongOffline>()
+    var musicFromService = MutableLiveData<SongOffline>()
     var cu= MutableLiveData<Int>()
     companion object {
         const val ACTION_PLAY = "play"
@@ -44,7 +45,6 @@ class MusicService :Service(){
 
     }
 
-
     override fun onBind(intent: Intent?): IBinder? {
         Log.d("stt", "inbinder")
         return MyBinder(this)
@@ -54,24 +54,44 @@ class MusicService :Service(){
         Log.d("st", "stcm")
         return Service.START_REDELIVER_INTENT
     }
+    fun searchSong(name: String) {
+        mMusicViewModel.searchSong(name)
+    }
+    fun getFullLinkSong(position: Int) {
 
+        mMusicViewModel.listMusicOnline.value?.let {
+            mMusicViewModel.getFullLinkOnline(it[position].linkMusic)
+        }
+        //mMusicViewModel.getFullLinkOnline(mMusicViewModel.listMusicOnline.value!![position].linkMusic!!)
+    }
 
-    fun playMusic(item: Music) {
+    fun play(item: SongSearchOnline) {
+        item.linkSong?.let {
+            mMusicManager?.setData(this, it)
+            mMusicManager?.play()
+            //createNotificationMusic()
+        }
+
+    }
+
+    fun playMusic(item: SongOffline) {
+        Log.d("pl","pl")
         mMusicManager?.setData(this, item.uri)
         cu.value=mMusicManager?.mMediaPlayer?.currentPosition
         createNotificationMusic(item)
     }
 
-    fun pauseMusic(item: Music) {
+    fun pauseMusic(item: SongOffline) {
         mMusicManager?.pause()
 
     }
 
-    fun continuePlayMusic(item: Music) {
+
+    fun continuePlayMusic(item: SongOffline) {
         mMusicManager?.continuePlay()
     }
 
-    fun stopMusic(item: Music) {
+    fun stopMusic(item: SongOffline) {
         mMusicManager?.stop()
 
     }
@@ -101,15 +121,15 @@ class MusicService :Service(){
         }
     }
 
-    private fun createNotificationMusic(item: Music) {
+    private fun createNotificationMusic(item: SongOffline) {
         Log.d("no", item.toString())
-        mu.value = item
+        musicFromService.value = item
         //chỗ này log ra nó đã nhận bài hát đây rồi
         val notification = NotificationCompat.Builder(
             this,
             "MusicService"
         )
-        val intent = Intent(this, HomeActivity::class.java)
+        val intent = Intent(this, OfflineFragment::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         intent.putExtra("re", "okbalo")
         val intentContentActivity = PendingIntent.getActivity(this, 1, intent, 0)

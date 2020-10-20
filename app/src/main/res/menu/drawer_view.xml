@@ -7,7 +7,7 @@
                 <item
                     android:id="@+id/list_music_of_nav"
                     android:icon="@drawable/ic_baseline_format_list_bulleted_24"
-                    android:title="List Music" />
+                    android:title="List Music OffLine" />
             </group>
 
         </menu>

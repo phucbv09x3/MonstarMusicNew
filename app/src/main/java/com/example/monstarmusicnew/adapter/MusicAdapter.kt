@@ -3,21 +3,28 @@ package com.example.monstarmusicnew.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.monstarmusicnew.R
-import com.example.monstarmusicnew.`interface`.ClickItem
-import com.example.monstarmusicnew.model.Music
+import com.example.monstarmusicnew.customInterface.IClickItemInList
+import com.example.monstarmusicnew.common.Util
+import com.example.monstarmusicnew.model.SongOffline
+import com.example.monstarmusicnew.view.activity.HomeActivity
 
-class MusicAdapter
+class MusicAdapter( val onClick:IClickItemInList)
     : RecyclerView.Adapter<MusicAdapter.MusicHolder>() {
-    private var mList: MutableList<Music> = mutableListOf()
-    private var onClick:ClickItem?=null
+    var positionM=MutableLiveData<Int>()
+
+    private var mList: MutableList<SongOffline> = mutableListOf()
     class MusicHolder(itemView:View):RecyclerView.ViewHolder(itemView){
         val nameMusic=itemView.findViewById<TextView>(R.id.tv_nameMusic)
         val nameSinger=itemView.findViewById<TextView>(R.id.tv_nameSinger)
+        val img=itemView.findViewById<ImageView>(R.id.image_of_music)
     }
-    fun setListMusic( mutableList: MutableList<Music>){
+    fun setListMusic( mutableList: MutableList<SongOffline>){
         this.mList=mutableList
         notifyDataSetChanged()
     }
@@ -33,8 +40,18 @@ class MusicAdapter
         val music=mList[position]
         holder.nameMusic.text=music.nameMusic
         holder.nameSinger.text=music.nameSinger
-        holder.itemView.setOnClickListener {
-            onClick?.clickOnItem(music,position)
+        positionM.value=position
+       holder.itemView.setOnClickListener {
+           onClick?.clickOnItem(mList[position],holder.adapterPosition)
+       }
+        if(Util.songArt(mList[position].uri)==null){
+            holder.img.setImageResource(R.drawable.hoanghon)
+        }else{
+            holder.img.setImageBitmap(Util.songArt(mList[position].uri))
         }
     }
+
+
 }
+
+
