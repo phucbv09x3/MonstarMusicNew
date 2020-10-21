@@ -2,6 +2,7 @@ package com.example.monstarmusicnew.customInterface
 
 import com.example.monstarmusicnew.model.SongSearchOnline
 import com.example.monstarmusicnew.model.SongLinkOnline
+import com.example.monstarmusicnew.model.SongM
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -10,7 +11,7 @@ interface SongRepository {
     fun searchSong(
         @Query(value = "songName")
         name:String
-    ) : retrofit2.Call<MutableList<SongSearchOnline>>
+    ) : retrofit2.Call<MutableList<SongM>>
 
     @GET("/api/linkMusic")
     fun getLinkMusic(

@@ -14,14 +14,15 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.MutableLiveData
 import com.example.monstarmusicnew.R
+import com.example.monstarmusicnew.model.SongM
 import com.example.monstarmusicnew.view.fragment.OfflineFragment
 import com.example.monstarmusicnew.model.SongOffline
 import com.example.monstarmusicnew.model.SongSearchOnline
 import com.example.monstarmusicnew.viewmodel.MusicViewModel
 
 class MusicService :Service(){
-    var mu = MutableLiveData<SongOffline>()
-    var musicFromService = MutableLiveData<SongOffline>()
+    var mu = MutableLiveData<SongM>()
+    var musicFromService = MutableLiveData<SongM>()
     var cu= MutableLiveData<Int>()
     companion object {
         const val ACTION_PLAY = "play"
@@ -54,41 +55,36 @@ class MusicService :Service(){
         Log.d("st", "stcm")
         return Service.START_REDELIVER_INTENT
     }
-    fun searchSong(name: String) {
-        mMusicViewModel.searchSong(name)
-    }
-    fun getFullLinkSong(position: Int) {
+//    fun searchSong(name: String) {
+//        mMusicViewModel.searchSong(name)
+//    }
+//    fun getFullLinkSong(position: Int) {
+//
+//        mMusicViewModel.listMusicOnline.value?.let {
+//            mMusicViewModel.getFullLinkOnline(it[position].linkMusic)
+//        }
+//        //mMusicViewModel.getFullLinkOnline(mMusicViewModel.listMusicOnline.value!![position].linkMusic!!)
+//    }
 
-        mMusicViewModel.listMusicOnline.value?.let {
-            mMusicViewModel.getFullLinkOnline(it[position].linkMusic)
-        }
-        //mMusicViewModel.getFullLinkOnline(mMusicViewModel.listMusicOnline.value!![position].linkMusic!!)
-    }
-
-    fun play(item: SongSearchOnline) {
-        item.linkSong?.let {
-            mMusicManager?.setData(this, it)
-            mMusicManager?.play()
-            //createNotificationMusic()
-        }
-
-    }
-
-    fun playMusic(item: SongOffline) {
+    fun playMusic(item: SongM) {
         Log.d("pl","pl")
-        mMusicManager?.setData(this, item.uri)
-        cu.value=mMusicManager?.mMediaPlayer?.currentPosition
+        mMusicManager?.setData(this, item.linkSong){
+            createNotificationMusic(item)
+        }
+
         createNotificationMusic(item)
     }
 
-    fun pauseMusic(item: SongOffline) {
+    fun pauseMusic(item: SongM) {
         mMusicManager?.pause()
+        createNotificationMusic(item)
 
     }
 
 
-    fun continuePlayMusic(item: SongOffline) {
+    fun continuePlayMusic(item: SongM) {
         mMusicManager?.continuePlay()
+        createNotificationMusic(item)
     }
 
     fun stopMusic(item: SongOffline) {
@@ -121,10 +117,9 @@ class MusicService :Service(){
         }
     }
 
-    private fun createNotificationMusic(item: SongOffline) {
+    private fun createNotificationMusic(item: SongM) {
         Log.d("no", item.toString())
         musicFromService.value = item
-        //chỗ này log ra nó đã nhận bài hát đây rồi
         val notification = NotificationCompat.Builder(
             this,
             "MusicService"
@@ -150,12 +145,12 @@ class MusicService :Service(){
         val actionIntentClose =
             PendingIntent.getBroadcast(this, 0, intentBroadClose, PendingIntent.FLAG_UPDATE_CURRENT)
         notification.addAction(R.drawable.ic_baseline_skip_previous_24, "previous", actionIntentPrevious)
-        notification.addAction(R.drawable.ic_baseline_pause_24, "play", actionIntentPlay)
+        notification.addAction(if (mMusicManager?.mMediaPlayer!!.isPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24, "play", actionIntentPlay)
         notification.addAction(R.drawable.ic_baseline_skip_next_24, "next", actionIntentNext)
         notification.addAction(R.drawable.ic_baseline_close_24, "Close", actionIntentClose)
         notification.setContentIntent(intentContentActivity)
         notification.setContentTitle("Music Offline From Phúc")
-        notification.setContentText(item.nameMusic)
+        notification.setContentText(item.songName)
         notification.setSmallIcon(R.drawable.ic_baseline_library_music_24)
         notification.setAutoCancel(true)
         notification.priority = NotificationCompat.PRIORITY_LOW

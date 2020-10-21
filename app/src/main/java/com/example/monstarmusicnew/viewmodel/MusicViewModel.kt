@@ -6,9 +6,9 @@ import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.monstarmusicnew.customInterface.SongRepository
-import com.example.monstarmusicnew.model.SongOffline
-import com.example.monstarmusicnew.model.SongSearchOnline
 import com.example.monstarmusicnew.model.SongLinkOnline
+import com.example.monstarmusicnew.model.SongM
+import com.example.monstarmusicnew.model.SongSearchOnline
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.Call
 import retrofit2.Callback
@@ -17,11 +17,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MusicViewModel : ViewModel() {
-    var listMusicOffline = MutableLiveData<MutableList<SongOffline>>()
-    private var mListMusicInViewModel = mutableListOf<SongOffline>()
+    var listMusicOffline = MutableLiveData<MutableList<SongM>>()
+    private var mListMusicInViewModel = mutableListOf<SongM>()
 
-    var listMusicOnline = MutableLiveData<MutableList<SongSearchOnline>>()
-    var linkGetOnline=MutableLiveData<SongSearchOnline>()
+    var listMusicOnline = MutableLiveData<MutableList<SongM>>()
+    var linkGetOnline = MutableLiveData<SongM>()
 
 
     val songRepository: SongRepository
@@ -39,41 +39,41 @@ class MusicViewModel : ViewModel() {
 
     fun searchSong(name: String) {
         val call = songRepository?.searchSong(name)
-        call?.enqueue(object : Callback<MutableList<SongSearchOnline>> {
+        call?.enqueue(object : Callback<MutableList<SongM>> {
             override fun onResponse(
-                call: Call<MutableList<SongSearchOnline>>,
-                response: Response<MutableList<SongSearchOnline>>
+                call: Call<MutableList<SongM>>,
+                response: Response<MutableList<SongM>>
             ) {
                 listMusicOnline.value = response.body()
             }
 
-            override fun onFailure(call: Call<MutableList<SongSearchOnline>>, t: Throwable) {
+            override fun onFailure(call: Call<MutableList<SongM>>, t: Throwable) {
 
             }
 
         })
     }
 
-    fun getFullLinkOnline(link: String) {
-        val call=songRepository?.getLinkMusic(link)
-        call?.enqueue(object :Callback<SongLinkOnline>{
-            override fun onResponse(
-                call: Call<SongLinkOnline>,
-                response: Response<SongLinkOnline>
-            ) {
-                for (item in listMusicOnline.value!!){
-                    if (item.linkSong!!.equals(link)){
-                        item.linkMusic = response?.body()?.link.toString()
-                        linkGetOnline.value=item
-                    }
-                }
-            }
-
-            override fun onFailure(call: Call<SongLinkOnline>, t: Throwable) {
-
-            }
-        })
-    }
+//    fun getFullLinkOnline(link: String) {
+//        val call = songRepository?.getLinkMusic(link)
+//        call?.enqueue(object : Callback<SongM> {
+//            override fun onResponse(
+//                call: Call<SongM>,
+//                response: Response<SongM>
+//            ) {
+//                for (item in listMusicOnline.value!!) {
+//                    if (item.linkSong!!.equals(link)) {
+//                        item.linkMusic = response?.body()?.link.toString()
+//                        linkGetOnline.value = item
+//                    }
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<SongM>, t: Throwable) {
+//
+//            }
+//        })
+//    }
 
     fun getListMusicOffLine(contentResolver: ContentResolver) {
         var uriri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
@@ -89,15 +89,15 @@ class MusicViewModel : ViewModel() {
                 val currentTT = cursor.getString(title)
                 val currentArtist = cursor.getString(songArtist)
                 val uri = cursor.getString(urii)
-                val durationMusic = cursor.getString(duration)
+
                 mListMusicInViewModel.add(
-                    SongOffline(
+                    SongM(
                         idd,
-                        1,
+                        "",
                         currentTT,
                         currentArtist,
                         uri,
-                        durationMusic
+                        ""
                     )
                 )
             } while (cursor.moveToNext())

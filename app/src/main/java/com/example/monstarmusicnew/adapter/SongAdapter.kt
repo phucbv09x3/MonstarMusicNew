@@ -9,27 +9,24 @@ import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.monstarmusicnew.R
 import com.example.monstarmusicnew.common.Util
-import com.example.monstarmusicnew.customInterface.IClickItemInList
-import com.example.monstarmusicnew.customInterface.ISongClickOnline
-import com.example.monstarmusicnew.model.SongOffline
-import com.example.monstarmusicnew.model.SongSearchOnline
+import com.example.monstarmusicnew.customInterface.ISongClick
+import com.example.monstarmusicnew.model.SongM
+import com.example.monstarmusicnew.view.fragment.OnlineFragment
 import com.squareup.picasso.Picasso
 
-class SongAdapaterOnline (  var mList: MutableList<SongSearchOnline>,val onClick: ISongClickOnline)
-: RecyclerView.Adapter<SongAdapaterOnline.MusicOnlineHolder>() {
+class SongAdapter(var mList: MutableList<SongM>, val onClick: ISongClick)
+: RecyclerView.Adapter<SongAdapter.MusicOnlineHolder>() {
     var positionM= MutableLiveData<Int>()
-
-
     class MusicOnlineHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val nameMusic=itemView.findViewById<TextView>(R.id.tv_nameMusic)
         val nameSinger=itemView.findViewById<TextView>(R.id.tv_nameSinger)
         val img=itemView.findViewById<ImageView>(R.id.image_of_music)
     }
-    fun setListMusic( mutableList: MutableList<SongSearchOnline>){
+    fun setListMusic( mutableList: MutableList<SongM>){
         this.mList=mutableList
         notifyDataSetChanged()
     }
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongAdapaterOnline.MusicOnlineHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongAdapter.MusicOnlineHolder {
 
         val v = LayoutInflater.from(parent.context).inflate(R.layout.item_music, parent, false)
         return MusicOnlineHolder(v)
@@ -46,7 +43,20 @@ class SongAdapaterOnline (  var mList: MutableList<SongSearchOnline>,val onClick
         holder.itemView.setOnClickListener {
             onClick?.clickItemOnline(mList[position],holder.adapterPosition)
         }
-        Picasso.get().load(mList[position].linkImage).into(holder.img)
+        if(Util.songArt(mList[position].linkSong)==null){
+            holder.img.setImageResource(R.drawable.hoanghon)
+        }else{
+            holder.img.setImageBitmap(Util.songArt(mList[position].linkSong))
+        }
+        if (OnlineFragment().isVisible){
+            if (music.linkImage.isEmpty()){
+                Picasso.get().load(R.drawable.hoanghon).into(holder.img)
+            } else {
+                Picasso.get().load(mList[position].linkImage).into(holder.img)
+
+            }
+        }
+//
     }
 
 }

@@ -8,8 +8,8 @@ import androidx.lifecycle.MutableLiveData
 class MusicManager : MediaPlayer.OnPreparedListener , MediaPlayer.OnErrorListener{
     var mMediaPlayer: MediaPlayer? = null
     var durationMusic = MutableLiveData<Int>()
-
-    fun setData(context: Context, uriMusic: String) {
+    var handlePrepared: (() -> Unit)? = null
+    fun setData(context: Context, uriMusic: String, handlePrepared: (() -> Unit)) {
         mMediaPlayer?.release()
         mMediaPlayer = MediaPlayer()
         mMediaPlayer?.let {
@@ -17,15 +17,14 @@ class MusicManager : MediaPlayer.OnPreparedListener , MediaPlayer.OnErrorListene
             it.setOnErrorListener(this)
             it.setOnPreparedListener(this)
             it.prepareAsync()
+            this.handlePrepared=handlePrepared
         }
-
     }
-
     override fun onPrepared(mp: MediaPlayer) {
         durationMusic.value = mp?.duration
         play()
+        handlePrepared?.let { it() }
     }
-
     fun isPlaying():Boolean{
         if (mMediaPlayer==null){
             return false
