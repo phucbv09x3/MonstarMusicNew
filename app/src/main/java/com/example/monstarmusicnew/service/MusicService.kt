@@ -53,32 +53,7 @@ class MusicService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("st", "stcm")
         return Service.START_REDELIVER_INTENT
-    }
-
-//    fun searchSong(name: String) {
-//        mMusicViewModel.searchSong(name)
-//    }
-//
-//    fun getFullLinkSong(position: Int) {
-//        mMusicViewModel.listMusicOnline.value?.let {
-//            mMusicViewModel.getFullLinkOnline(it[position].linkMusic)
-//        }
-//
-//    }
-
-    fun play(item: SongLinkOnline) {
-        Log.d("pl", "pl")
-        try {
-            mMusicManager?.setData(this, item.link!!) {
-
-            }
-        } catch (exx: IOException) {
-
-        }
-
-
     }
 
     fun playMusic(item: SongM) {

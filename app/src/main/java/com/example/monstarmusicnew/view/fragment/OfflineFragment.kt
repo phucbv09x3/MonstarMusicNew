@@ -37,6 +37,7 @@ class OfflineFragment : Fragment(), ISongClick {
     }
 
     override fun clickItemOnline(songM: SongM, position: Int) {
+        (activity as HomeActivity).checkPositon=position
         (activity as HomeActivity).mMusicService?.playMusic(songM)
         (activity as HomeActivity).tv_nameSingerShow?.text = songM.artistName
         (activity as HomeActivity).tv_nameMusicShow?.text = songM.songName

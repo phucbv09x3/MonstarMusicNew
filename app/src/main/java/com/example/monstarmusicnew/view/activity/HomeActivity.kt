@@ -47,7 +47,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var mTimeCurrent = 0
     private var intentService = Intent()
     var mMusicService: MusicService? = null
-    var checkIsOnOrOff = false
+    var checkPositon=0
     var musicGet= mutableListOf<SongM>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -283,7 +283,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         btn_play.setOnClickListener(this)
         btn_next.setOnClickListener(this)
         btn_previous.setOnClickListener(this)
-
     }
 
 
@@ -317,7 +316,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 initSeekBar()
                                 runSeekBar()
                             })
-
                         if (mMusicService?.getMusicManager()?.mMediaPlayer?.isPlaying == true) {
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                         }
