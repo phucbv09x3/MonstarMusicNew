@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.FragmentManager
 import com.example.monstarmusicnew.R
 import com.example.monstarmusicnew.adapter.SongAdapter
 import com.example.monstarmusicnew.model.SongM
@@ -45,6 +46,8 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var musicViewModel: MusicViewModel
     private lateinit var intentFil: IntentFilter
     private var intentService = Intent()
+    var checkIsOnOrOff = false
+    private var mFragmentManager:FragmentManager?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,17 +59,17 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24)
         navigationView.setNavigationItemSelectedListener(this)
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.content_manager_fragment, mOfflineFragment!!)
-            .commit()
-
+        mFragmentManager=supportFragmentManager
+        val fragmentTransaction=mFragmentManager?.beginTransaction()
+        fragmentTransaction?.add(R.id.content_manager_fragment,mOfflineFragment!!,"fragmentOff")
+        fragmentTransaction?.addToBackStack("fragmentOffline")
+        fragmentTransaction?.commit()
         startService()
         createConnection()
         clicksPlayMusic()
         registerReceiver(broadcastReceiver, intentFil)
         requestReadListMusicOffline()
-
+        Log.d("phuc","${supportFragmentManager.backStackEntryCount}")
 
     }
 
@@ -91,36 +94,35 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(p0: MenuItem): Boolean {
+
         when (p0.itemId) {
             R.id.list_music_of_nav -> {
                 Log.d("of", mOfflineFragment!!.isVisible.toString())
                 title = "Music OffLine"
                 Log.d("ad", mOfflineFragment?.isAdded.toString())
                 drawer_layout.closeDrawers()
-                supportFragmentManager
-                    .beginTransaction()
-                    .show(mOfflineFragment!!)
-                    .hide(mOnlineFragment!!)
-                    .commit()
+                if (mOfflineFragment!!.isAdded){
+                    mFragmentManager?.popBackStack("fragmentOffline",0)
+                }else{
+                    val fragmentTransaction=mFragmentManager?.beginTransaction()
+                    fragmentTransaction?.add(R.id.content_manager_fragment,mOfflineFragment!!,"fragment")
+                    fragmentTransaction?.addToBackStack("fragmentOffline")
+                    fragmentTransaction?.commit()
+
+                }
+
             }
             R.id.home_music_online_of_nav -> {
-                Log.d("off", mOfflineFragment!!.isVisible.toString())
-
                 title = "Music Online"
                 drawer_layout.closeDrawers()
-                if (mOnlineFragment!!.isAdded) {
-                    supportFragmentManager
-                        .beginTransaction()
-                        .show(mOnlineFragment!!)
-                        .hide(mOfflineFragment!!)
-                        .commit()
-                } else {
-                    supportFragmentManager
-                        .beginTransaction()
-                        .add(R.id.content_manager_fragment, mOnlineFragment!!)
-                        .show(mOnlineFragment!!)
-                        .hide(mOfflineFragment!!)
-                        .commit()
+                if (mOnlineFragment!!.isAdded){
+                    mFragmentManager?.popBackStack("null",0)
+                }else{
+                    val fragmentTransaction=mFragmentManager?.beginTransaction()
+                    fragmentTransaction?.add(R.id.content_manager_fragment,mOnlineFragment!!,"fragmentOn")
+                    fragmentTransaction?.addToBackStack("null")
+                    fragmentTransaction?.commit()
+
                 }
             }
 
@@ -128,6 +130,13 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount>1){
+            supportFragmentManager.popBackStack()
+        }else{
+            super.onBackPressed()
+        }
+    }
     private fun requestReadListMusicOffline() = if (ContextCompat.checkSelfPermission(
             this,
             android.Manifest.permission.READ_EXTERNAL_STORAGE

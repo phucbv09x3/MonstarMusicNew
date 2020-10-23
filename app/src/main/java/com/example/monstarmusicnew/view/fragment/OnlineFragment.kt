@@ -49,7 +49,6 @@ class OnlineFragment : Fragment(), ISongClick {
         mMusicViewModel = MusicViewModel()
         register()
         (activity as HomeActivity).btn_search.setOnClickListener {
-
             mMusicViewModel?.searchSong((activity as HomeActivity).edt_text.text.toString())
             mMusicViewModel?.listMusicOnline?.observe(this, Observer {
                 (view?.rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
