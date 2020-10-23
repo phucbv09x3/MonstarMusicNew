@@ -16,7 +16,6 @@ import kotlinx.android.synthetic.main.content_activity.*
 import kotlinx.android.synthetic.main.fragment_offline.view.*
 
 class OfflineFragment : Fragment(), ISongClick {
-
     private var mMusicViewModel: MusicViewModel? = null
     private lateinit var mAdapter: SongAdapter
     var mPosition = 0

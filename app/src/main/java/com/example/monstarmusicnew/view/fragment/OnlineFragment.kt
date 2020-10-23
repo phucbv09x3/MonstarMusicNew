@@ -22,12 +22,11 @@ import kotlinx.android.synthetic.main.fragment_online.view.*
 class OnlineFragment : Fragment(), ISongClick {
     private var mMusicViewModel: MusicViewModel? = null
     private var mAdapter: SongAdapterOnline? = null
-    var pr: ProgressDialog? = null
+    private var mProgress: ProgressDialog? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_online, container, false)
         return view
     }
@@ -37,14 +36,9 @@ class OnlineFragment : Fragment(), ISongClick {
         super.onViewCreated(view, savedInstanceState)
         view.rcy_listOnline.layoutManager = LinearLayoutManager(activity)
         mAdapter = SongAdapterOnline(
-            (if ((activity as HomeActivity).mMusicService == null ||
-                (activity as HomeActivity).mMusicService?.getModel()?.listMusicOnline?.value == null
-            )
-                mutableListOf<SongM>() else
-                (activity as HomeActivity).mMusicService?.getModel()?.listMusicOnline?.value!!),
+            mutableListOf<SongM>(),
             this
         )
-
         view.rcy_listOnline.adapter = mAdapter
         mMusicViewModel = MusicViewModel()
         register()

@@ -34,21 +34,21 @@ import java.util.*
 
 class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     View.OnClickListener {
-    private var mOfflineFragment: OfflineFragment? = null
-    private var mOnlineFragment: OnlineFragment? = null
-    var mMusicService: MusicService? = null
+    private lateinit var musicViewModel: MusicViewModel
+    private lateinit var intentFil: IntentFilter
     private lateinit var mConnection: ServiceConnection
+    private var mOfflineFragment: OfflineFragment? = null
+    private var mFragmentManager:FragmentManager?=null
+    private var mOnlineFragment: OnlineFragment? = null
     private var mListPlay = mutableListOf<SongM>()
     private var isCheckBoundService: Boolean = false
     private var songM: SongM? = null
     private var mPosition: Int = 0
     private var mTimeCurrent = 0
-    private lateinit var musicViewModel: MusicViewModel
-    private lateinit var intentFil: IntentFilter
     private var intentService = Intent()
+    var mMusicService: MusicService? = null
     var checkIsOnOrOff = false
-    private var mFragmentManager:FragmentManager?=null
-
+    var musicGet= mutableListOf<SongM>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
@@ -130,14 +130,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount>1){
-            supportFragmentManager.popBackStack()
-        }else{
-            super.onBackPressed()
-        }
 
-    }
     private fun requestReadListMusicOffline() = if (ContextCompat.checkSelfPermission(
             this,
             android.Manifest.permission.READ_EXTERNAL_STORAGE
