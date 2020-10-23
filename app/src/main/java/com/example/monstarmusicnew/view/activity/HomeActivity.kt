@@ -67,6 +67,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         registerReceiver(broadcastReceiver, intentFil)
         requestReadListMusicOffline()
 
+
     }
 
     private fun init() {

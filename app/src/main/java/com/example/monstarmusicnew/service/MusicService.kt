@@ -175,7 +175,7 @@ class MusicService : Service() {
         notification.addAction(R.drawable.ic_baseline_skip_next_24, "next", actionIntentNext)
         notification.addAction(R.drawable.ic_baseline_close_24, "Close", actionIntentClose)
         notification.setContentIntent(intentContentActivity)
-        notification.setContentTitle("Music Offline From Phúc")
+        notification.setContentTitle("Music From Phúc")
         notification.setContentText(item.songName)
         notification.setSmallIcon(R.drawable.ic_baseline_library_music_24)
         notification.setAutoCancel(true)

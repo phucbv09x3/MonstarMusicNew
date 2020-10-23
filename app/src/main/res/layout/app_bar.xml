@@ -26,10 +26,13 @@
                 android:layout_width="35dp"
                 android:layout_height="35dp"/>
             <EditText
+
                 android:id="@+id/edt_text"
                 android:layout_width="wrap_content"
-                android:hint="Search"
-                android:background="#ffffff"
+                android:hint="Search music"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:background="@drawable/custombg"
                 android:layout_marginRight="3dp"
                 android:layout_gravity="right"
                 android:textColor="#000000"

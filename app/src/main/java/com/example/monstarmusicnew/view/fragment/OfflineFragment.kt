@@ -41,6 +41,7 @@ class OfflineFragment : Fragment(), ISongClick {
         (activity as HomeActivity).mMusicService?.playMusic(songM)
         (activity as HomeActivity).tv_nameSingerShow?.text = songM.artistName
         (activity as HomeActivity).tv_nameMusicShow?.text = songM.songName
+
     }
 
 
