@@ -23,7 +23,7 @@ import java.io.IOException
 class MusicService : Service() {
     var mu = MutableLiveData<SongM>()
     var musicFromService = MutableLiveData<SongM>()
-    var cu = MutableLiveData<Int>()
+    var currentPostion = MutableLiveData<Int>()
 
     companion object {
         const val ACTION_PLAY = "play"
@@ -56,25 +56,26 @@ class MusicService : Service() {
         return Service.START_REDELIVER_INTENT
     }
 
-    fun playMusic(item: SongM) {
+    fun playMusic(item: SongM,pos: Int) {
         Log.d("pl", "pl")
         mMusicManager?.setData(this, item.linkMusic) {
-            createNotificationMusic(item)
+            createNotificationMusic(item,pos)
         }
 
-        createNotificationMusic(item)
+        createNotificationMusic(item,pos)
+        Log.d("phucc",pos.toString())
     }
 
-    fun pauseMusic(item: SongM) {
+    fun pauseMusic(item: SongM,pos: Int) {
         mMusicManager?.pause()
-        createNotificationMusic(item)
+        createNotificationMusic(item,pos)
 
     }
 
 
-    fun continuePlayMusic(item: SongM) {
+    fun continuePlayMusic(item: SongM,pos: Int) {
         mMusicManager?.continuePlay()
-        createNotificationMusic(item)
+        createNotificationMusic(item,pos)
     }
 
     fun stopMusic(item: SongM) {
@@ -106,16 +107,17 @@ class MusicService : Service() {
         }
     }
 
-    private fun createNotificationMusic(item: SongM) {
+    private fun createNotificationMusic(item: SongM,pos:Int) {
         Log.d("no", item.toString())
         musicFromService.value = item
+        currentPostion.value=pos
         val notification = NotificationCompat.Builder(
             this,
             "MusicService"
         )
         val intent = Intent(this, HomeActivity::class.java)
         intent.flags =  Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        intent.putExtra("re", "okbalo")
+
         val intentContentActivity = PendingIntent.getActivity(this, 1, intent, 0)
         val intentBroadPlay = Intent().setAction(ACTION_PLAY)
         val actionIntentPlay =

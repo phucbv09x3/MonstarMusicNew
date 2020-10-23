@@ -22,17 +22,15 @@ class  SongAdapterOnline(var mList: MutableList<SongM>, val onClick: ISongClick)
     var positionM = MutableLiveData<Int>()
 
     class MusicOnlineHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val nameMusic = itemView.findViewById<TextView>(R.id.tv_nameMusic)
-        val nameSinger = itemView.findViewById<TextView>(R.id.tv_nameSinger)
-        val img = itemView.findViewById<ImageView>(R.id.image_of_music)
+        val nameMusic: TextView = itemView.findViewById(R.id.tv_nameMusic)
+        val nameSinger: TextView = itemView.findViewById(R.id.tv_nameSinger)
+        val img: ImageView = itemView.findViewById(R.id.image_of_music)
     }
 
     fun setListMusic(mutableList: MutableList<SongM>) {
         val callback = SongDiffCallback(mList, mutableList)
         val result = DiffUtil.calculateDiff(callback)
-
         mList = mutableList
-
         result.dispatchUpdatesTo(this)
     }
 

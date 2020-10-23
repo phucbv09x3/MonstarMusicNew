@@ -18,6 +18,7 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.FragmentManager
 import com.example.monstarmusicnew.R
 import com.example.monstarmusicnew.adapter.SongAdapter
+import com.example.monstarmusicnew.adapter.SongAdapterOnline
 import com.example.monstarmusicnew.model.SongM
 import com.example.monstarmusicnew.service.MusicService
 import com.example.monstarmusicnew.view.fragment.OfflineFragment
@@ -28,6 +29,7 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar.*
 import kotlinx.android.synthetic.main.content_activity.*
 import kotlinx.android.synthetic.main.fragment_offline.*
+import kotlinx.android.synthetic.main.fragment_online.*
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -174,10 +176,18 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             this.mListPlay = it
         })
     }
+    fun getListOnline(){
+        musicViewModel.searchSong(edt_text.text.toString())
+        musicViewModel.listMusicOnline.observe(this, androidx.lifecycle.Observer {
+            (rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
+            this.mListPlay=it
+        })
+    }
 
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val actionOnNotification = intent?.action
+            val getPostion=intent?.getStringExtra("keyposition")
             if (mMusicService?.getMusicManager()?.mMediaPlayer!!.isPlaying) {
                 btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
             } else {
@@ -206,7 +216,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                             tv_nameMusicShow.text = mListPlay[mPosition].songName
                             tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                            mMusicService?.playMusic(mListPlay[mPosition])
+                            mMusicService?.playMusic(mListPlay[mPosition],mPosition)
                         } else {
                             Toast.makeText(
                                 this@HomeActivity,
@@ -230,14 +240,14 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             btn_play.setImageResource(R.drawable.ic_baseline_play_arrow_24)
 
                             songM?.let { itt ->
-                                mMusicService?.pauseMusic(itt)
+                                mMusicService?.pauseMusic(itt,mPosition)
 
                             }
                         } else {
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
 
                             songM?.let { itt ->
-                                mMusicService?.continuePlayMusic(itt)
+                                mMusicService?.continuePlayMusic(itt,mPosition)
 
 
                             }
@@ -257,7 +267,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                                 tv_nameMusicShow.text = mListPlay[mPosition].songName
                                 tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                                mMusicService?.playMusic(mListPlay[mPosition])
+                                mMusicService?.playMusic(mListPlay[mPosition],mPosition)
                             } else {
                                 Toast.makeText(
                                     this@HomeActivity,
@@ -320,6 +330,10 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                         }
                     })
+                mMusicService?.currentPostion?.observe(this@HomeActivity, androidx.lifecycle.Observer {
+                    mPosition=it
+                    tv_nameSingerShow.text=it.toString()
+                })
 
             }
         }
@@ -396,14 +410,14 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 btn_play.setImageResource(R.drawable.ic_baseline_play_arrow_24)
                                 mMusicService?.let {
                                     songM?.let { itt ->
-                                        it.pauseMusic(itt)
+                                        it.pauseMusic(itt,mPosition)
                                     }
                                 }
                             } else {
                                 btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                                 mMusicService?.let {
                                     songM?.let { itt ->
-                                        it.continuePlayMusic(itt)
+                                        it.continuePlayMusic(itt,mPosition)
                                         //loopMusic()
                                     }
                                 }
@@ -422,7 +436,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             mPosition += 1
                             tv_nameMusicShow.text = mListPlay[mPosition].songName
                             tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                            mMusicService?.playMusic(mListPlay[mPosition])
+                            mMusicService?.playMusic(mListPlay[mPosition],mPosition)
                             // loopMusic()
                         } else {
                             Toast.makeText(
@@ -448,7 +462,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                             tv_nameMusicShow.text = mListPlay[mPosition].songName
                             tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                            mMusicService?.playMusic(mListPlay[mPosition])
+                            mMusicService?.playMusic(mListPlay[mPosition],mPosition)
                             //loopMusic()
                         } else {
                             Toast.makeText(this, "Không thể back bài", Toast.LENGTH_LONG).show()

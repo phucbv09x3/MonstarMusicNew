@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.monstarmusicnew.customInterface.SongRepository
@@ -16,9 +17,11 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.*
 
 class MusicViewModel : ViewModel() {
 
+    var isCheckOnline=MutableLiveData<Boolean>()
     private var mListMusicInViewModel = mutableListOf<SongM>()
     var listMusicOffline = MutableLiveData<MutableList<SongM>>()
 
@@ -43,6 +46,7 @@ class MusicViewModel : ViewModel() {
                 response: Response<MutableList<SongM>>
             ) {
                 listMusicOnline.value = response.body()
+                isCheckOnline.value=true
             }
 
             override fun onFailure(call: Call<MutableList<SongM>>, t: Throwable) {
@@ -106,6 +110,7 @@ class MusicViewModel : ViewModel() {
                 )
             } while (cursor.moveToNext())
             listMusicOffline.value = mListMusicInViewModel
+            isCheckOnline.value=false
         }
     }
 }

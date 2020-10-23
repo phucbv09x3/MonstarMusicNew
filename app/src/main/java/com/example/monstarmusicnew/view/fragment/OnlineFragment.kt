@@ -23,6 +23,7 @@ class OnlineFragment : Fragment(), ISongClick {
     private var mMusicViewModel: MusicViewModel? = null
     private var mAdapter: SongAdapterOnline? = null
     private var mProgress: ProgressDialog? = null
+    var list= mutableListOf<SongM>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -46,6 +47,7 @@ class OnlineFragment : Fragment(), ISongClick {
             mMusicViewModel?.searchSong((activity as HomeActivity).edt_text.text.toString())
             mMusicViewModel?.listMusicOnline?.observe(this, Observer {
                 (view?.rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
+                list=it
             })
         }
 
@@ -70,7 +72,7 @@ class OnlineFragment : Fragment(), ISongClick {
         mMusicViewModel?.linkGetOnline?.observe(this, androidx.lifecycle.Observer {
             (activity as HomeActivity).tv_nameSingerShow?.text = it.link.toString()
             songM.linkMusic = it.link.toString()
-            (activity as HomeActivity)?.mMusicService?.playMusic(songM)
+            (activity as HomeActivity)?.mMusicService?.playMusic(songM,position)
         })
 
         mMusicViewModel?.getLyricOfMusic(songM.linkSong!!)
