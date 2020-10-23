@@ -176,13 +176,13 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             this.mListPlay = it
         })
     }
-    fun getListOnline(){
-        musicViewModel.searchSong(edt_text.text.toString())
-        musicViewModel.listMusicOnline.observe(this, androidx.lifecycle.Observer {
-            (rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
-            this.mListPlay=it
-        })
-    }
+//    fun getListOnline(){
+//        musicViewModel.searchSong(edt_text.text.toString())
+//        musicViewModel.listMusicOnline.observe(this, androidx.lifecycle.Observer {
+//            (rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
+//            this.mListPlay=it
+//        })
+//    }
 
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
