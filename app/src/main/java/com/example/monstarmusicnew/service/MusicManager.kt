@@ -9,11 +9,11 @@ class MusicManager : MediaPlayer.OnPreparedListener , MediaPlayer.OnErrorListene
     var mMediaPlayer: MediaPlayer? = null
     var durationMusic = MutableLiveData<Int>()
     var handlePrepared: (() -> Unit)? = null
-    fun setData(context: Context, uriMusic: String, handlePrepared: (() -> Unit)) {
+    fun setData(context: Context, link: String, handlePrepared: (() -> Unit)) {
         mMediaPlayer?.release()
         mMediaPlayer = MediaPlayer()
         mMediaPlayer?.let {
-            it.setDataSource(context, Uri.parse(uriMusic))
+            it.setDataSource(context, Uri.parse(link))
             it.setOnErrorListener(this)
             it.setOnPreparedListener(this)
             it.prepareAsync()

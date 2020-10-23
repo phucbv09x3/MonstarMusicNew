@@ -12,7 +12,6 @@ import com.example.monstarmusicnew.customInterface.ISongClick
 import com.example.monstarmusicnew.model.SongM
 import com.example.monstarmusicnew.view.activity.HomeActivity
 import com.example.monstarmusicnew.viewmodel.MusicViewModel
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.content_activity.*
 import kotlinx.android.synthetic.main.fragment_offline.view.*
 
@@ -40,8 +39,8 @@ class OfflineFragment : Fragment(), ISongClick {
 
     override fun clickItemOnline(songM: SongM, position: Int) {
         (activity as HomeActivity).mMusicService?.playMusic(songM)
-        (activity as HomeActivity).tv_nameSingerShow?.text=songM.artistName
-        (activity as HomeActivity).tv_nameMusicShow?.text=songM.songName
+        (activity as HomeActivity).tv_nameSingerShow?.text = songM.artistName
+        (activity as HomeActivity).tv_nameMusicShow?.text = songM.songName
     }
 
 
@@ -83,7 +82,6 @@ class OfflineFragment : Fragment(), ISongClick {
 //            this.mListPlay = it
 //        })
 //    }
-
 
 
 }

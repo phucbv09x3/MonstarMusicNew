@@ -26,7 +26,7 @@
                 android:layout_width="35dp"
                 android:layout_height="35dp"/>
             <EditText
-                android:id="@+id/sv_text"
+                android:id="@+id/edt_text"
                 android:layout_width="wrap_content"
                 android:hint="Search"
                 android:background="#ffffff"

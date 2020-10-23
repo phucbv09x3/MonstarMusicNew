@@ -1,6 +1,6 @@
 package com.example.monstarmusicnew.customInterface
 
-import com.example.monstarmusicnew.model.SongSearchOnline
+import com.example.monstarmusicnew.model.Lyric
 import com.example.monstarmusicnew.model.SongLinkOnline
 import com.example.monstarmusicnew.model.SongM
 import retrofit2.http.GET
@@ -18,4 +18,8 @@ interface SongRepository {
         @Query(value = "linkSong")
         linkSong:String
     ) : retrofit2.Call<SongLinkOnline>
+
+    @GET("/api/getLyric")
+    fun getLyricMusic(@Query(value = "linkSong")
+    linkSong: String):retrofit2.Call<Lyric>
 }

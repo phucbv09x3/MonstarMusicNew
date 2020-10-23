@@ -1,20 +1,24 @@
 package com.example.monstarmusicnew.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.monstarmusicnew.R
 import com.example.monstarmusicnew.common.Util
 import com.example.monstarmusicnew.customInterface.ISongClick
 import com.example.monstarmusicnew.model.SongM
+import com.example.monstarmusicnew.view.fragment.OfflineFragment
 import com.squareup.picasso.Picasso
 
-class SongAdapter(var mList: MutableList<SongM>, val onClick: ISongClick) :
-    RecyclerView.Adapter<SongAdapter.MusicOnlineHolder>() {
+class  SongAdapterOnline(var mList: MutableList<SongM>, val onClick: ISongClick) :
+    RecyclerView.Adapter<SongAdapterOnline.MusicOnlineHolder>() {
     var positionM = MutableLiveData<Int>()
 
     class MusicOnlineHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,14 +28,18 @@ class SongAdapter(var mList: MutableList<SongM>, val onClick: ISongClick) :
     }
 
     fun setListMusic(mutableList: MutableList<SongM>) {
-        this.mList = mutableList
-        notifyDataSetChanged()
+        val callback = SongDiffCallback(mList, mutableList)
+        val result = DiffUtil.calculateDiff(callback)
+
+        mList = mutableList
+
+        result.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): SongAdapter.MusicOnlineHolder {
+    ): SongAdapterOnline.MusicOnlineHolder {
 
         val v = LayoutInflater.from(parent.context).inflate(R.layout.item_music, parent, false)
         return MusicOnlineHolder(v)
@@ -50,13 +58,26 @@ class SongAdapter(var mList: MutableList<SongM>, val onClick: ISongClick) :
         holder.itemView.setOnClickListener {
             onClick?.clickItemOnline(mList[position], holder.adapterPosition)
         }
-        if (Util.songArt(mList[position].linkMusic) == null) {
-            holder.img.setImageResource(R.drawable.hoanghon)
+
+        if (music.linkImage.isEmpty()) {
+            Picasso.get().load(R.drawable.hoanghon).into(holder.img)
         } else {
-            holder.img.setImageBitmap(Util.songArt(mList[position].linkMusic))
+            Log.d("Binh", "Image: ${music.linkImage}")
+
+            Glide.with(holder.img).load(music.linkImage).error(R.drawable.musicnew).into(holder.img)
         }
     }
 
+
+    class SongDiffCallback(var oldList: MutableList<SongM>, var newList: MutableList<SongM>): DiffUtil.Callback(){
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int  = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            oldList[oldItemPosition].id == newList[newItemPosition].id
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            oldList[oldItemPosition].songName == newList[newItemPosition].songName
+    }
 }
-
-

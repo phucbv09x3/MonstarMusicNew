@@ -15,12 +15,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.Fragment
 import com.example.monstarmusicnew.R
 import com.example.monstarmusicnew.adapter.SongAdapter
 import com.example.monstarmusicnew.model.SongM
 import com.example.monstarmusicnew.service.MusicService
 import com.example.monstarmusicnew.view.fragment.OfflineFragment
+import com.example.monstarmusicnew.view.fragment.OnlineFragment
 import com.example.monstarmusicnew.viewmodel.MusicViewModel
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_home.*
@@ -34,6 +34,7 @@ import java.util.*
 class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     View.OnClickListener {
     private var mOfflineFragment: OfflineFragment? = null
+    private var mOnlineFragment: OnlineFragment? = null
     var mMusicService: MusicService? = null
     private lateinit var mConnection: ServiceConnection
     private var mListPlay = mutableListOf<SongM>()
@@ -43,13 +44,12 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var mTimeCurrent = 0
     private lateinit var musicViewModel: MusicViewModel
     private lateinit var intentFil: IntentFilter
-    var intentService = Intent()
+    private var intentService = Intent()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-        mOfflineFragment = OfflineFragment()
-        musicViewModel = MusicViewModel()
+        init()
         setSupportActionBar(toolbar)
         title = "Music OffLine"
         val actionBar = supportActionBar
@@ -59,19 +59,74 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         supportFragmentManager
             .beginTransaction()
             .add(R.id.content_manager_fragment, mOfflineFragment!!)
-            .addToBackStack(null)
             .commit()
+
         startService()
         createConnection()
         clicksPlayMusic()
+        registerReceiver(broadcastReceiver, intentFil)
+        requestReadListMusicOffline()
+
+    }
+
+    private fun init() {
+        mOfflineFragment = OfflineFragment()
+        mOnlineFragment = OnlineFragment()
+        musicViewModel = MusicViewModel()
         intentFil = IntentFilter()
         intentFil.addAction(MusicService.ACTION_CLOSE)
         intentFil.addAction(MusicService.ACTION_NEXT)
         intentFil.addAction(MusicService.ACTION_PLAY)
         intentFil.addAction(MusicService.ACTION_PREVIOUS)
-        registerReceiver(broadcastReceiver, intentFil)
-       requestReadListMusicOffline()
     }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                drawer_layout.openDrawer(GravityCompat.START)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onNavigationItemSelected(p0: MenuItem): Boolean {
+        when (p0.itemId) {
+            R.id.list_music_of_nav -> {
+                Log.d("of", mOfflineFragment!!.isVisible.toString())
+                title = "Music OffLine"
+                Log.d("ad", mOfflineFragment?.isAdded.toString())
+                drawer_layout.closeDrawers()
+                supportFragmentManager
+                    .beginTransaction()
+                    .show(mOfflineFragment!!)
+                    .hide(mOnlineFragment!!)
+                    .commit()
+            }
+            R.id.home_music_online_of_nav -> {
+                Log.d("off", mOfflineFragment!!.isVisible.toString())
+
+                title = "Music Online"
+                drawer_layout.closeDrawers()
+                if (mOnlineFragment!!.isAdded) {
+                    supportFragmentManager
+                        .beginTransaction()
+                        .show(mOnlineFragment!!)
+                        .hide(mOfflineFragment!!)
+                        .commit()
+                } else {
+                    supportFragmentManager
+                        .beginTransaction()
+                        .add(R.id.content_manager_fragment, mOnlineFragment!!)
+                        .show(mOnlineFragment!!)
+                        .hide(mOfflineFragment!!)
+                        .commit()
+                }
+            }
+
+        }
+        return true
+    }
+
     private fun requestReadListMusicOffline() = if (ContextCompat.checkSelfPermission(
             this,
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -79,7 +134,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         != PackageManager.PERMISSION_GRANTED
     ) {
         ActivityCompat.requestPermissions(
-           this,
+            this,
             arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
             1
         )
@@ -102,17 +157,20 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
     private fun stopSV() {
         intentService.setClass(this, MusicService::class.java)
         stopService(intentService)
     }
+
     private fun getListOff() {
         musicViewModel?.getListMusicOffLine(contentResolver)
         musicViewModel?.listMusicOffline?.observe(this, androidx.lifecycle.Observer {
-            ((this as AppCompatActivity)?.rcy_listOffline?.adapter as SongAdapter).setListMusic(it)
+            (rcy_listOffline?.adapter as SongAdapter).setListMusic(it)
             this.mListPlay = it
         })
     }
+
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val actionOnNotification = intent?.action
@@ -135,10 +193,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     tv_total_time.text = "00:00"
                     isCheckBoundService = false
                     btn_play.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-//                    if (isCheckBoundService) {
-//                        unbindService(mConnection)
-//                        //stopSV()
-//                    }
+
                 }
                 MusicService.ACTION_NEXT -> {
                     if (mMusicService?.getMusicManager()?.mMediaPlayer?.isPlaying == true) {
@@ -148,7 +203,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             tv_nameMusicShow.text = mListPlay[mPosition].songName
                             tv_nameSingerShow.text = mListPlay[mPosition].artistName
                             mMusicService?.playMusic(mListPlay[mPosition])
-                            //mMusic=mListPlay[mPosition]
                         } else {
                             Toast.makeText(
                                 this@HomeActivity,
@@ -186,7 +240,10 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                         }
                     }
-                    Log.d("tesst",mMusicService?.getMusicManager()?.mMediaPlayer?.isPlaying.toString())
+                    Log.d(
+                        "tesst",
+                        mMusicService?.getMusicManager()?.mMediaPlayer?.isPlaying.toString()
+                    )
                 }
                 MusicService.ACTION_PREVIOUS -> {
                     mMusicService?.getMusicManager()?.mMediaPlayer?.let {
@@ -217,69 +274,14 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d("show", "${mOfflineFragment?.isResumed}")
-    }
 
     private fun clicksPlayMusic() {
         btn_play.setOnClickListener(this)
         btn_next.setOnClickListener(this)
         btn_previous.setOnClickListener(this)
+
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                drawer_layout.openDrawer(GravityCompat.START)
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onNavigationItemSelected(p0: MenuItem): Boolean {
-        when (p0.itemId) {
-            R.id.list_music_of_nav -> {
-                title = "Music OffLine"
-                Log.d("ad", mOfflineFragment?.isAdded.toString())
-                drawer_layout.closeDrawers()
-                if (OfflineFragment().isResumed) {
-                    supportFragmentManager
-                        .beginTransaction()
-                        .show(OfflineFragment())
-                        .commit()
-
-                } else {
-                    supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.content_manager_fragment, OfflineFragment())
-                        .commit()
-                }
-
-
-            }
-            R.id.home_music_online_of_nav -> {
-                title = "Music Online"
-                drawer_layout.closeDrawers()
-                if (Fragment().isAdded) {
-                    supportFragmentManager
-                        .beginTransaction()
-                        .show(Fragment())
-                        .commit()
-                } else {
-                    supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.content_manager_fragment, Fragment())
-                        .addToBackStack(null)
-                        .commit()
-                }
-
-
-            }
-
-        }
-        return true
-    }
 
     private fun createConnection() {
         mConnection = object : ServiceConnection {
@@ -308,14 +310,15 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 tv_total_time.text = time
                                 mTimeCurrent = duration.toInt()
                                 this@HomeActivity.seekBar_time.max = duration
+                                initSeekBar()
+                                runSeekBar()
                             })
 
                         if (mMusicService?.getMusicManager()?.mMediaPlayer?.isPlaying == true) {
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                         }
                     })
-                initSeekBar()
-                runSeekBar()
+
             }
         }
         val intent = Intent()
@@ -377,6 +380,9 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.btn_play -> {
+                if (this.title.equals("Music Online")) {
+                    Log.d("checkOn", "Chekon")
+                }
                 if (mMusicService?.getMusicManager()?.mMediaPlayer == null) {
                     Toast.makeText(this, "Vui long chon bai hat !", Toast.LENGTH_LONG).show()
                 } else {

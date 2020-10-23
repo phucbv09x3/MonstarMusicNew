@@ -3,12 +3,13 @@ package com.example.monstarmusicnew.viewmodel
 import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.monstarmusicnew.customInterface.SongRepository
+import com.example.monstarmusicnew.model.Lyric
 import com.example.monstarmusicnew.model.SongLinkOnline
 import com.example.monstarmusicnew.model.SongM
-import com.example.monstarmusicnew.model.SongSearchOnline
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.Call
 import retrofit2.Callback
@@ -17,25 +18,22 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MusicViewModel : ViewModel() {
-    var listMusicOffline = MutableLiveData<MutableList<SongM>>()
+
     private var mListMusicInViewModel = mutableListOf<SongM>()
+    var listMusicOffline = MutableLiveData<MutableList<SongM>>()
 
     var listMusicOnline = MutableLiveData<MutableList<SongM>>()
-    var linkGetOnline = MutableLiveData<SongM>()
+    var linkGetOnline = MutableLiveData<SongLinkOnline>()
+    private val baseUrl = "http://192.168.86.2:5000"
 
-
-    val songRepository: SongRepository
-
-    init {
-        songRepository = Retrofit.Builder()
-            .baseUrl("https://songserver.herokuapp.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(
-                RxJava2CallAdapterFactory.create()
-            ).build()
-            .create(SongRepository::class.java)
-
-    }
+    var lyricMusic=MutableLiveData<Lyric>()
+    private val songRepository: SongRepository = Retrofit.Builder()
+        .baseUrl(baseUrl)
+        .addConverterFactory(GsonConverterFactory.create())
+        .addCallAdapterFactory(
+            RxJava2CallAdapterFactory.create()
+        ).build()
+        .create(SongRepository::class.java)
 
     fun searchSong(name: String) {
         val call = songRepository?.searchSong(name)
@@ -48,33 +46,39 @@ class MusicViewModel : ViewModel() {
             }
 
             override fun onFailure(call: Call<MutableList<SongM>>, t: Throwable) {
-
+                Log.d("fail", t.toString())
             }
 
         })
     }
 
-//    fun getFullLinkOnline(link: String) {
-//        val call = songRepository?.getLinkMusic(link)
-//        call?.enqueue(object : Callback<SongM> {
-//            override fun onResponse(
-//                call: Call<SongM>,
-//                response: Response<SongM>
-//            ) {
-//                for (item in listMusicOnline.value!!) {
-//                    if (item.linkSong!!.equals(link)) {
-//                        item.linkMusic = response?.body()?.link.toString()
-//                        linkGetOnline.value = item
-//                    }
-//                }
-//            }
-//
-//            override fun onFailure(call: Call<SongM>, t: Throwable) {
-//
-//            }
-//        })
-//    }
+    fun getFullLinkOnline(link: String) {
+        val call = songRepository?.getLinkMusic(link)
+        call?.enqueue(object : Callback<SongLinkOnline> {
+            override fun onResponse(
+                call: Call<SongLinkOnline>,
+                response: Response<SongLinkOnline>
+            ) {
+                linkGetOnline.value = response.body()
+            }
 
+            override fun onFailure(call: Call<SongLinkOnline>, t: Throwable) {
+            }
+        })
+    }
+    fun getLyricOfMusic(link:String){
+        val call = songRepository?.getLyricMusic(link)
+        call?.enqueue(object :Callback<Lyric>{
+            override fun onResponse(call: Call<Lyric>, response: Response<Lyric>) {
+                lyricMusic.value=response?.body()
+            }
+
+            override fun onFailure(call: Call<Lyric>, t: Throwable) {
+
+            }
+
+        })
+    }
     fun getListMusicOffLine(contentResolver: ContentResolver) {
         var uriri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         var cursor = contentResolver.query(uriri, null, null, null, null)
@@ -96,8 +100,8 @@ class MusicViewModel : ViewModel() {
                         "",
                         currentTT,
                         currentArtist,
-                        uri,
-                        ""
+                        "",
+                        uri
                     )
                 )
             } while (cursor.moveToNext())

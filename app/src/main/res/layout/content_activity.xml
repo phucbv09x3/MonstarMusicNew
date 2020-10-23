@@ -31,6 +31,16 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+        <Button
+            android:id="@+id/btn_lyric"
+            android:background="@drawable/ic_baseline_wrap_text_24"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textAllCaps="false"
+            android:layout_marginTop="6dp"
+            android:layout_marginRight="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_width="20dp"
+            android:layout_height="20dp"/>
 
         <TextView
             android:id="@+id/tv_nameSingerShow"

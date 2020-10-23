@@ -14,16 +14,17 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.MutableLiveData
 import com.example.monstarmusicnew.R
+import com.example.monstarmusicnew.model.SongLinkOnline
 import com.example.monstarmusicnew.model.SongM
-import com.example.monstarmusicnew.view.fragment.OfflineFragment
-import com.example.monstarmusicnew.model.SongOffline
-import com.example.monstarmusicnew.model.SongSearchOnline
+import com.example.monstarmusicnew.view.activity.HomeActivity
 import com.example.monstarmusicnew.viewmodel.MusicViewModel
+import java.io.IOException
 
-class MusicService :Service(){
+class MusicService : Service() {
     var mu = MutableLiveData<SongM>()
     var musicFromService = MutableLiveData<SongM>()
-    var cu= MutableLiveData<Int>()
+    var cu = MutableLiveData<Int>()
+
     companion object {
         const val ACTION_PLAY = "play"
         const val ACTION_PREVIOUS = "previous"
@@ -55,20 +56,34 @@ class MusicService :Service(){
         Log.d("st", "stcm")
         return Service.START_REDELIVER_INTENT
     }
+
 //    fun searchSong(name: String) {
 //        mMusicViewModel.searchSong(name)
 //    }
-//    fun getFullLinkSong(position: Int) {
 //
+//    fun getFullLinkSong(position: Int) {
 //        mMusicViewModel.listMusicOnline.value?.let {
 //            mMusicViewModel.getFullLinkOnline(it[position].linkMusic)
 //        }
-//        //mMusicViewModel.getFullLinkOnline(mMusicViewModel.listMusicOnline.value!![position].linkMusic!!)
+//
 //    }
 
+    fun play(item: SongLinkOnline) {
+        Log.d("pl", "pl")
+        try {
+            mMusicManager?.setData(this, item.link!!) {
+
+            }
+        } catch (exx: IOException) {
+
+        }
+
+
+    }
+
     fun playMusic(item: SongM) {
-        Log.d("pl","pl")
-        mMusicManager?.setData(this, item.linkSong){
+        Log.d("pl", "pl")
+        mMusicManager?.setData(this, item.linkMusic) {
             createNotificationMusic(item)
         }
 
@@ -87,11 +102,10 @@ class MusicService :Service(){
         createNotificationMusic(item)
     }
 
-    fun stopMusic(item: SongOffline) {
+    fun stopMusic(item: SongM) {
         mMusicManager?.stop()
 
     }
-
 
 
     class MyBinder : Binder {
@@ -124,8 +138,8 @@ class MusicService :Service(){
             this,
             "MusicService"
         )
-        val intent = Intent(this, OfflineFragment::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.flags =  Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         intent.putExtra("re", "okbalo")
         val intentContentActivity = PendingIntent.getActivity(this, 1, intent, 0)
         val intentBroadPlay = Intent().setAction(ACTION_PLAY)
@@ -139,13 +153,25 @@ class MusicService :Service(){
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         val intentBroadNext = Intent().setAction(ACTION_NEXT)
-        val actionIntentNext =
-            PendingIntent.getBroadcast(this, 0, intentBroadNext, PendingIntent.FLAG_UPDATE_CURRENT)
+        val actionIntentNext = PendingIntent.getBroadcast(this,
+            0,
+            intentBroadNext,
+            PendingIntent.FLAG_UPDATE_CURRENT)
         val intentBroadClose = Intent().setAction(ACTION_CLOSE)
-        val actionIntentClose =
-            PendingIntent.getBroadcast(this, 0, intentBroadClose, PendingIntent.FLAG_UPDATE_CURRENT)
-        notification.addAction(R.drawable.ic_baseline_skip_previous_24, "previous", actionIntentPrevious)
-        notification.addAction(if (mMusicManager?.mMediaPlayer!!.isPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24, "play", actionIntentPlay)
+        val actionIntentClose = PendingIntent.getBroadcast(this,
+            0,
+            intentBroadClose,
+            PendingIntent.FLAG_UPDATE_CURRENT)
+        notification.addAction(
+            R.drawable.ic_baseline_skip_previous_24,
+            "previous",
+            actionIntentPrevious
+        )
+        notification.addAction(
+            if (mMusicManager?.mMediaPlayer!!.isPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24,
+            "play",
+            actionIntentPlay
+        )
         notification.addAction(R.drawable.ic_baseline_skip_next_24, "next", actionIntentNext)
         notification.addAction(R.drawable.ic_baseline_close_24, "Close", actionIntentClose)
         notification.setContentIntent(intentContentActivity)

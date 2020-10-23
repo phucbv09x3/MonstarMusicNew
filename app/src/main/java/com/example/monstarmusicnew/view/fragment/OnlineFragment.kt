@@ -1,6 +1,6 @@
 package com.example.monstarmusicnew.view.fragment
 
-import android.content.*
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.monstarmusicnew.R
-import com.example.monstarmusicnew.adapter.SongAdapter
+import com.example.monstarmusicnew.adapter.SongAdapterOnline
 import com.example.monstarmusicnew.customInterface.ISongClick
 import com.example.monstarmusicnew.model.SongM
 import com.example.monstarmusicnew.view.activity.HomeActivity
@@ -19,10 +19,10 @@ import kotlinx.android.synthetic.main.content_activity.*
 import kotlinx.android.synthetic.main.fragment_online.view.*
 
 
-class OnlineFragment : Fragment() ,ISongClick{
+class OnlineFragment : Fragment(), ISongClick {
     private var mMusicViewModel: MusicViewModel? = null
-    private  var mAdapter: SongAdapter?=null
-    var startstop = Intent()
+    private var mAdapter: SongAdapterOnline? = null
+    var pr: ProgressDialog? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -32,22 +32,34 @@ class OnlineFragment : Fragment() ,ISongClick{
         return view
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.rcy_listOnline.layoutManager = LinearLayoutManager(activity)
-        mAdapter=SongAdapter(
-            (if ((activity as HomeActivity).mMusicService== null ||
+        mAdapter = SongAdapterOnline(
+            (if ((activity as HomeActivity).mMusicService == null ||
                 (activity as HomeActivity).mMusicService?.getModel()?.listMusicOnline?.value == null
             )
                 mutableListOf<SongM>() else
-                (activity as HomeActivity).mMusicService?.getModel()?.listMusicOnline?.value!!) as MutableList<SongM>,this)
+                (activity as HomeActivity).mMusicService?.getModel()?.listMusicOnline?.value!!),
+            this
+        )
+
         view.rcy_listOnline.adapter = mAdapter
         mMusicViewModel = MusicViewModel()
         register()
+        (activity as HomeActivity).btn_search.setOnClickListener {
+
+            mMusicViewModel?.searchSong((activity as HomeActivity).edt_text.text.toString())
+            mMusicViewModel?.listMusicOnline?.observe(this, Observer {
+                (view?.rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
+            })
+        }
+
 
     }
 
-    fun register(){
+    fun register() {
 
 //        (activity as HomeActivity).mMusicService?.getModel()?.linkGetOnline?.observe(this, Observer {
 //            (activity as HomeActivity).mMusicService?.play(it)
@@ -55,14 +67,23 @@ class OnlineFragment : Fragment() ,ISongClick{
 //        })
         mMusicViewModel?.searchSong("")
         mMusicViewModel?.listMusicOnline?.observe(this, Observer {
-            (view?.rcy_listOnline?.adapter as SongAdapter).setListMusic(it)
+            (view?.rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
         })
     }
 
     override fun clickItemOnline(songM: SongM, position: Int) {
-        (activity as HomeActivity).mMusicService?.playMusic(songM)
-        (activity as HomeActivity).tv_nameSingerShow?.text=songM.artistName
-        (activity as HomeActivity).tv_nameMusicShow?.text=songM.songName
+        val m = (activity as HomeActivity)
+        mMusicViewModel?.getFullLinkOnline(songM.linkSong.toString())
+        mMusicViewModel?.linkGetOnline?.observe(this, androidx.lifecycle.Observer {
+            (activity as HomeActivity).tv_nameSingerShow?.text = it.link.toString()
+            songM.linkMusic = it.link.toString()
+            (activity as HomeActivity)?.mMusicService?.playMusic(songM)
+        })
+
+        mMusicViewModel?.getLyricOfMusic(songM.linkSong!!)
+        mMusicViewModel?.lyricMusic?.observe(this, androidx.lifecycle.Observer {
+
+        })
     }
 
 }
