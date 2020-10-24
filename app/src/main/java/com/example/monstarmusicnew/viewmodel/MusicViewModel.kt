@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
-import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.monstarmusicnew.customInterface.SongRepository
@@ -17,19 +16,20 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.*
 
 class MusicViewModel : ViewModel() {
 
-    var isCheckOnline=MutableLiveData<Boolean>()
     private var mListMusicInViewModel = mutableListOf<SongM>()
     var listMusicOffline = MutableLiveData<MutableList<SongM>>()
 
     var listMusicOnline = MutableLiveData<MutableList<SongM>>()
     var linkGetOnline = MutableLiveData<SongLinkOnline>()
-    private val baseUrl = "http://192.168.86.2:5000"
+    var lyricMusic = MutableLiveData<Lyric>()
 
-    var lyricMusic=MutableLiveData<Lyric>()
+    companion object {
+        const val baseUrl = "http://192.168.86.2:5000"
+    }
+
     private val songRepository: SongRepository = Retrofit.Builder()
         .baseUrl(baseUrl)
         .addConverterFactory(GsonConverterFactory.create())
@@ -46,7 +46,6 @@ class MusicViewModel : ViewModel() {
                 response: Response<MutableList<SongM>>
             ) {
                 listMusicOnline.value = response.body()
-                isCheckOnline.value=true
             }
 
             override fun onFailure(call: Call<MutableList<SongM>>, t: Throwable) {
@@ -70,11 +69,12 @@ class MusicViewModel : ViewModel() {
             }
         })
     }
-    fun getLyricOfMusic(link:String){
-        val call = songRepository?.getLyricMusic(link)
-        call?.enqueue(object :Callback<Lyric>{
+
+    fun getLyricOfMusic(link: String) {
+        val call = songRepository.getLyricMusic(link)
+        call.enqueue(object : Callback<Lyric> {
             override fun onResponse(call: Call<Lyric>, response: Response<Lyric>) {
-                lyricMusic.value=response?.body()
+                lyricMusic.value = response.body()
             }
 
             override fun onFailure(call: Call<Lyric>, t: Throwable) {
@@ -83,21 +83,20 @@ class MusicViewModel : ViewModel() {
 
         })
     }
+
     fun getListMusicOffLine(contentResolver: ContentResolver) {
-        var uriri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        var cursor = contentResolver.query(uriri, null, null, null, null)
+        val uriri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        val cursor = contentResolver.query(uriri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
-            var urii = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-            var id = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
-            var title = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
-            var songArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
-            var duration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)
+            val urii = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+            val id = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+            val title = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
+            val songArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
             do {
                 val idd = cursor.getString(id)
                 val currentTT = cursor.getString(title)
                 val currentArtist = cursor.getString(songArtist)
                 val uri = cursor.getString(urii)
-
                 mListMusicInViewModel.add(
                     SongM(
                         idd,
@@ -110,7 +109,6 @@ class MusicViewModel : ViewModel() {
                 )
             } while (cursor.moveToNext())
             listMusicOffline.value = mListMusicInViewModel
-            isCheckOnline.value=false
         }
     }
 }

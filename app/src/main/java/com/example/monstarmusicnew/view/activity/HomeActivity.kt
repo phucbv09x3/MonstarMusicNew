@@ -3,6 +3,7 @@ package com.example.monstarmusicnew.view.activity
 import android.app.NotificationManager
 import android.content.*
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
@@ -15,10 +16,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.forEachIndexed
 import androidx.fragment.app.FragmentManager
 import com.example.monstarmusicnew.R
 import com.example.monstarmusicnew.adapter.SongAdapter
-import com.example.monstarmusicnew.adapter.SongAdapterOnline
 import com.example.monstarmusicnew.model.SongM
 import com.example.monstarmusicnew.service.MusicService
 import com.example.monstarmusicnew.view.fragment.OfflineFragment
@@ -29,7 +30,7 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar.*
 import kotlinx.android.synthetic.main.content_activity.*
 import kotlinx.android.synthetic.main.fragment_offline.*
-import kotlinx.android.synthetic.main.fragment_online.*
+import kotlinx.android.synthetic.main.item_music.*
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -40,7 +41,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var intentFil: IntentFilter
     private lateinit var mConnection: ServiceConnection
     private var mOfflineFragment: OfflineFragment? = null
-    private var mFragmentManager:FragmentManager?=null
+    private var mFragmentManager: FragmentManager? = null
     private var mOnlineFragment: OnlineFragment? = null
     private var mListPlay = mutableListOf<SongM>()
     private var isCheckBoundService: Boolean = false
@@ -49,8 +50,8 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var mTimeCurrent = 0
     private var intentService = Intent()
     var mMusicService: MusicService? = null
-    var checkPositon=0
-    var musicGet= mutableListOf<SongM>()
+    var checkPositon =0
+    var musicGet = mutableListOf<SongM>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
@@ -61,9 +62,9 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24)
         navigationView.setNavigationItemSelectedListener(this)
-        mFragmentManager=supportFragmentManager
-        val fragmentTransaction=mFragmentManager?.beginTransaction()
-        fragmentTransaction?.add(R.id.content_manager_fragment,mOfflineFragment!!,"fragmentOff")
+        mFragmentManager = supportFragmentManager
+        val fragmentTransaction = mFragmentManager?.beginTransaction()
+        fragmentTransaction?.add(R.id.content_manager_fragment, mOfflineFragment!!, "fragmentOff")
         fragmentTransaction?.addToBackStack("fragmentOffline")
         fragmentTransaction?.commit()
         startService()
@@ -71,7 +72,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         clicksPlayMusic()
         registerReceiver(broadcastReceiver, intentFil)
         requestReadListMusicOffline()
-        Log.d("phuc","${supportFragmentManager.backStackEntryCount}")
+        Log.d("phuc", "${supportFragmentManager.backStackEntryCount}")
 
     }
 
@@ -103,11 +104,15 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 title = "Music OffLine"
                 Log.d("ad", mOfflineFragment?.isAdded.toString())
                 drawer_layout.closeDrawers()
-                if (mOfflineFragment!!.isAdded){
-                    mFragmentManager?.popBackStack("fragmentOffline",0)
-                }else{
-                    val fragmentTransaction=mFragmentManager?.beginTransaction()
-                    fragmentTransaction?.add(R.id.content_manager_fragment,mOfflineFragment!!,"fragment")
+                if (mOfflineFragment!!.isAdded) {
+                    mFragmentManager?.popBackStack("fragmentOffline", 0)
+                } else {
+                    val fragmentTransaction = mFragmentManager?.beginTransaction()
+                    fragmentTransaction?.add(
+                        R.id.content_manager_fragment,
+                        mOfflineFragment!!,
+                        "fragment"
+                    )
                     fragmentTransaction?.addToBackStack("fragmentOffline")
                     fragmentTransaction?.commit()
 
@@ -117,11 +122,15 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.home_music_online_of_nav -> {
                 title = "Music Online"
                 drawer_layout.closeDrawers()
-                if (mOnlineFragment!!.isAdded){
-                    mFragmentManager?.popBackStack("null",0)
-                }else{
-                    val fragmentTransaction=mFragmentManager?.beginTransaction()
-                    fragmentTransaction?.add(R.id.content_manager_fragment,mOnlineFragment!!,"fragmentOn")
+                if (mOnlineFragment!!.isAdded) {
+                    mFragmentManager?.popBackStack("null", 0)
+                } else {
+                    val fragmentTransaction = mFragmentManager?.beginTransaction()
+                    fragmentTransaction?.add(
+                        R.id.content_manager_fragment,
+                        mOnlineFragment!!,
+                        "fragmentOn"
+                    )
                     fragmentTransaction?.addToBackStack("null")
                     fragmentTransaction?.commit()
 
@@ -171,23 +180,14 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun getListOff() {
         musicViewModel?.getListMusicOffLine(contentResolver)
-        musicViewModel?.listMusicOffline?.observe(this, androidx.lifecycle.Observer {
+        musicViewModel?.listMusicOffline?.observe(this, androidx.lifecycle.Observer {it->
             (rcy_listOffline?.adapter as SongAdapter).setListMusic(it)
             this.mListPlay = it
         })
     }
-//    fun getListOnline(){
-//        musicViewModel.searchSong(edt_text.text.toString())
-//        musicViewModel.listMusicOnline.observe(this, androidx.lifecycle.Observer {
-//            (rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
-//            this.mListPlay=it
-//        })
-//    }
-
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val actionOnNotification = intent?.action
-            val getPostion=intent?.getStringExtra("keyposition")
             if (mMusicService?.getMusicManager()?.mMediaPlayer!!.isPlaying) {
                 btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
             } else {
@@ -195,9 +195,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             when (actionOnNotification) {
                 MusicService.ACTION_CLOSE -> {
-                    val notificationManager = getSystemService(
-                        NOTIFICATION_SERVICE
-                    ) as NotificationManager
                     unbindService(mConnection)
                     stopSV()
                     seekBar_time.progress = 0
@@ -216,7 +213,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                             tv_nameMusicShow.text = mListPlay[mPosition].songName
                             tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                            mMusicService?.playMusic(mListPlay[mPosition],mPosition)
+                            mMusicService?.playMusic(mListPlay[mPosition], mPosition)
                         } else {
                             Toast.makeText(
                                 this@HomeActivity,
@@ -240,14 +237,14 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             btn_play.setImageResource(R.drawable.ic_baseline_play_arrow_24)
 
                             songM?.let { itt ->
-                                mMusicService?.pauseMusic(itt,mPosition)
+                                mMusicService?.pauseMusic(itt, mPosition)
 
                             }
                         } else {
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
 
                             songM?.let { itt ->
-                                mMusicService?.continuePlayMusic(itt,mPosition)
+                                mMusicService?.continuePlayMusic(itt, mPosition)
 
 
                             }
@@ -267,7 +264,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                                 tv_nameMusicShow.text = mListPlay[mPosition].songName
                                 tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                                mMusicService?.playMusic(mListPlay[mPosition],mPosition)
+                                mMusicService?.playMusic(mListPlay[mPosition], mPosition)
                             } else {
                                 Toast.makeText(
                                     this@HomeActivity,
@@ -293,6 +290,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         btn_play.setOnClickListener(this)
         btn_next.setOnClickListener(this)
         btn_previous.setOnClickListener(this)
+        btn_lyric.setOnClickListener(this)
     }
 
 
@@ -329,12 +327,9 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         if (mMusicService?.getMusicManager()?.mMediaPlayer?.isPlaying == true) {
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                         }
-                    })
-                mMusicService?.currentPostion?.observe(this@HomeActivity, androidx.lifecycle.Observer {
-                    mPosition=it
-                    tv_nameSingerShow.text=it.toString()
-                })
+//                        musicViewModel?.getLyricOfMusic(it.linkSong)
 
+                    })
             }
         }
         val intent = Intent()
@@ -346,6 +341,8 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         intentService.setClass(this, MusicService::class.java)
         startService(intentService)
     }
+
+
 
     private fun runSeekBar() {
         seekBar_time.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -410,14 +407,14 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 btn_play.setImageResource(R.drawable.ic_baseline_play_arrow_24)
                                 mMusicService?.let {
                                     songM?.let { itt ->
-                                        it.pauseMusic(itt,mPosition)
+                                        it.pauseMusic(itt, mPosition)
                                     }
                                 }
                             } else {
                                 btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                                 mMusicService?.let {
                                     songM?.let { itt ->
-                                        it.continuePlayMusic(itt,mPosition)
+                                        it.continuePlayMusic(itt, mPosition)
                                         //loopMusic()
                                     }
                                 }
@@ -436,7 +433,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             mPosition += 1
                             tv_nameMusicShow.text = mListPlay[mPosition].songName
                             tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                            mMusicService?.playMusic(mListPlay[mPosition],mPosition)
+                            mMusicService?.playMusic(mListPlay[mPosition], mPosition)
                             // loopMusic()
                         } else {
                             Toast.makeText(
@@ -462,7 +459,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             btn_play.setImageResource(R.drawable.ic_baseline_pause_24)
                             tv_nameMusicShow.text = mListPlay[mPosition].songName
                             tv_nameSingerShow.text = mListPlay[mPosition].artistName
-                            mMusicService?.playMusic(mListPlay[mPosition],mPosition)
+                            mMusicService?.playMusic(mListPlay[mPosition], mPosition)
                             //loopMusic()
                         } else {
                             Toast.makeText(this, "Không thể back bài", Toast.LENGTH_LONG).show()
@@ -471,6 +468,11 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         Toast.makeText(this, "Không thể back bài", Toast.LENGTH_LONG).show()
                     }
                 }
+            }
+            R.id.btn_lyric->{
+                val intent=Intent(this,LyricActivity::class.java)
+                intent.putExtra("keyLink",songM?.linkSong.toString())
+                startActivity(intent)
             }
         }
     }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,7 +24,7 @@ class OnlineFragment : Fragment(), ISongClick {
     private var mMusicViewModel: MusicViewModel? = null
     private var mAdapter: SongAdapterOnline? = null
     private var mProgress: ProgressDialog? = null
-    var list= mutableListOf<SongM>()
+    var list = mutableListOf<SongM>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,19 +48,15 @@ class OnlineFragment : Fragment(), ISongClick {
             mMusicViewModel?.searchSong((activity as HomeActivity).edt_text.text.toString())
             mMusicViewModel?.listMusicOnline?.observe(this, Observer {
                 (view?.rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
-                list=it
+                list = it
             })
         }
 
 
     }
 
-    fun register() {
 
-//        (activity as HomeActivity).mMusicService?.getModel()?.linkGetOnline?.observe(this, Observer {
-//            (activity as HomeActivity).mMusicService?.play(it)
-//
-//        })
+    private fun register() {
         mMusicViewModel?.searchSong("")
         mMusicViewModel?.listMusicOnline?.observe(this, Observer {
             (view?.rcy_listOnline?.adapter as SongAdapterOnline).setListMusic(it)
@@ -67,17 +64,11 @@ class OnlineFragment : Fragment(), ISongClick {
     }
 
     override fun clickItemOnline(songM: SongM, position: Int) {
-        val m = (activity as HomeActivity)
         mMusicViewModel?.getFullLinkOnline(songM.linkSong.toString())
         mMusicViewModel?.linkGetOnline?.observe(this, androidx.lifecycle.Observer {
             (activity as HomeActivity).tv_nameSingerShow?.text = it.link.toString()
             songM.linkMusic = it.link.toString()
-            (activity as HomeActivity)?.mMusicService?.playMusic(songM,position)
-        })
-
-        mMusicViewModel?.getLyricOfMusic(songM.linkSong!!)
-        mMusicViewModel?.lyricMusic?.observe(this, androidx.lifecycle.Observer {
-
+            (activity as HomeActivity)?.mMusicService?.playMusic(songM, position)
         })
     }
 
